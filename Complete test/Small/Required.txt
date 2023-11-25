@@ -1,0 +1,2 @@
+Case1.1: segment the hand
+Case1.2: segment the flower

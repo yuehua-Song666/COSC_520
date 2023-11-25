@@ -1,0 +1,2 @@
+Case2.1: segment the man in the middle
+Case2.2: segment the Egypt map

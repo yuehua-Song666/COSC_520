@@ -1,0 +1,2 @@
+Case3.1: segment one of the white buildings
+Case3.2: segment one of the digits (e.g. 6 or III)
