@@ -26,6 +26,7 @@ def sobel_filters(image):
 
     Returns:
     - tuple: Gradient in x direction (Gx), Gradient in y direction (Gy), and Gradient magnitude (G).
+    O(n*m) where n is the number of rows and m is the number of columns.
     """
     # Sobel kernels for x and y directions
     sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
