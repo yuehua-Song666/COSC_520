@@ -8,10 +8,7 @@ def main():
     window = ImageWin()
     window.setMouseTracking(True)
     window.setWindowTitle('Livewire Demo')
-    window.setFixedSize(window.size())
-    window.resize(800, 600)
     window.show()
-    # window.setFixedSize(window.size())
     sys.exit(app.exec_())
 
 

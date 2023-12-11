@@ -21,10 +21,3 @@ This contains the requirements.txt file for the all implementations aside from t
 
 - testSuite2
 Contains some other trials and some more unit tests.
-
-## reasons for why we deserve bonuses :)
-
-- graph construction uses sobel filter to find edges, this is more advanced
-- graph construction uses a gaussian filter to smooth the image, this is more advanced
-- great design of GUI
-- speed up of the program in terms of initiallization

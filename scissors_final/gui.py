@@ -3,8 +3,7 @@ import time
 import cv2
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtGui import QPixmap
-# from threading import Thread
-# can be used for parallel computing
+from threading import Thread
 from livewire import Livewire
 
 
@@ -21,29 +20,40 @@ class ImageWin(QtWidgets.QWidget):
     def setupUi(self):
         self.hbox = QtWidgets.QVBoxLayout(self)
 
-        # Load and initialize image
-        self.image_path = ''
-        # while self.image_path == '':
-        #     self.image_path = QtWidgets.QFileDialog.getOpenFileName(self, '', '', '(*.bmp *.jpg *.png)')
-        while self.image_path == '':
-            self.image_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-                self, '', '', 'Images (*.bmp *.jpg *.png)')
-        self.image = QPixmap(self.image_path)
-        self.cv2_image = cv2.imread(str(self.image_path))
-        self.lw = Livewire(self.cv2_image)
-        self.w, self.h = self.image.width(), self.image.height()
-
+        # Placeholder or blank canvas initialization
         self.canvas = QtWidgets.QLabel(self)
         self.canvas.setMouseTracking(True)
-        self.canvas.setPixmap(self.image)
+        self.canvas.setText(
+            "No Image Loaded. Click 'Load New Image' to begin.")
+        self.canvas.setAlignment(QtCore.Qt.AlignCenter)  # Center the text
+
+        # Load New Image Button
+        self.load_button = QtWidgets.QPushButton('Load New Image', self)
+        self.load_button.clicked.connect(self.load_new_image)
+        self.hbox.addWidget(self.load_button)
 
         self.status_bar = QtWidgets.QStatusBar(self)
-        self.status_bar.showMessage('Left click to set first anchor point')
-
-        self.hbox.addWidget(self.canvas)
+        self.status_bar.showMessage('Click "Load New Image" to begin')
         self.hbox.addWidget(self.status_bar)
+        self.hbox.addWidget(self.canvas)
         self.setLayout(self.hbox)
-        self.canvas.setCursor(QtGui.QCursor(QtCore.Qt.CrossCursor))
+        self.lw = None
+
+    def load_new_image(self):
+        new_image_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, '', '', 'Images (*.bmp *.jpg *.png)')
+        if new_image_path:
+            self.image_path = new_image_path
+            self.image = QPixmap(self.image_path)
+            self.cv2_image = cv2.imread(str(self.image_path))
+            self.lw = Livewire(self.cv2_image)
+            self.w, self.h = self.image.width(), self.image.height()
+            self.resize(self.w, self.h)
+            self.canvas.setPixmap(self.image)
+            self.path_map = {}
+            self.path = []
+            self.anchor = None
+            self.status_bar.showMessage('Left click to set first anchor point')
 
     def mousePressEvent(self, event):
         if self.anchor_enabled:
