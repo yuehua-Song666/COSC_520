@@ -1,0 +1,6 @@
+# for initial implementations, for requirements.txt
+pillow
+numpy
+opencv-python 
+matplotlib
+tk

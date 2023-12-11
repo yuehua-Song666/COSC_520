@@ -39,6 +39,7 @@ class InteractiveScissorsApp:
         Gx, Gy, G = graphConstructor.sobel_filters(image_array)
         self.graph = graphConstructor.construct_graph_with_gradients(
             image_array, G)
+        
 
     def on_click(self, event):
         # Disable further clicks
@@ -52,6 +53,7 @@ class InteractiveScissorsApp:
         self.anchor_points.append((y, x))
         # If there are at least two points, draw the path between the last two points
         if len(self.anchor_points) > 1:
+            #i
             self.draw_path_between_points(
                 self.anchor_points[-2], self.anchor_points[-1])
         # Rebind the click event and reset the cursor after processing is done

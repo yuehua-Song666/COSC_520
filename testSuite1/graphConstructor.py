@@ -18,27 +18,14 @@ def get_neighbors(row, col, rows, cols):
 
 
 def sobel_filters(image):
-    """
-    Apply Sobel filters to calculate the gradients in x and y directions.
-
-    Args:
-    - image (np.array): Grayscale image.
-
-    Returns:
-    - tuple: Gradient in x direction (Gx), Gradient in y direction (Gy), and Gradient magnitude (G).
-    O(n*m) where n is the number of rows and m is the number of columns.
-    """
     # Sobel kernels for x and y directions
     sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
     sobel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
-
     # Convolution
     Gx = convolve(image, sobel_x)
     Gy = convolve(image, sobel_y)
-
     # Gradient magnitude
     G = np.sqrt(Gx**2 + Gy**2)
-
     return Gx, Gy, G
 
 

@@ -3,49 +3,54 @@ import time
 import cv2
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtGui import QPixmap
-from threading import Thread
+# from threading import Thread
+# can be used for parallel computing
 from livewire import Livewire
+
 
 class ImageWin(QtWidgets.QWidget):
     def __init__(self):
         super(ImageWin, self).__init__()
         self.setupUi()
         self.active = False
-        self.seed_enabled = True
-        self.seed = None
+        self.anchor_enabled = True
+        self.anchor = None
         self.path_map = {}
         self.path = []
-        
+
     def setupUi(self):
         self.hbox = QtWidgets.QVBoxLayout(self)
-        
+
         # Load and initialize image
         self.image_path = ''
         # while self.image_path == '':
         #     self.image_path = QtWidgets.QFileDialog.getOpenFileName(self, '', '', '(*.bmp *.jpg *.png)')
         while self.image_path == '':
-            self.image_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, '', '', 'Images (*.bmp *.jpg *.png)')
+            self.image_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self, '', '', 'Images (*.bmp *.jpg *.png)')
         self.image = QPixmap(self.image_path)
         self.cv2_image = cv2.imread(str(self.image_path))
         self.lw = Livewire(self.cv2_image)
         self.w, self.h = self.image.width(), self.image.height()
-        
+
         self.canvas = QtWidgets.QLabel(self)
         self.canvas.setMouseTracking(True)
         self.canvas.setPixmap(self.image)
-        
+
         self.status_bar = QtWidgets.QStatusBar(self)
-        self.status_bar.showMessage('Left click to set a seed')
-        
+        self.status_bar.showMessage('Left click to set first anchor point')
+
         self.hbox.addWidget(self.canvas)
         self.hbox.addWidget(self.status_bar)
         self.setLayout(self.hbox)
-    
-    def mousePressEvent(self, event):            
-        if self.seed_enabled:
+        self.canvas.setCursor(QtGui.QCursor(QtCore.Qt.CrossCursor))
+
+    def mousePressEvent(self, event):
+        if self.anchor_enabled:
+            self.canvas.unsetCursor()
             pos = event.pos()
             x, y = pos.x()-self.canvas.x(), pos.y()-self.canvas.y()
-            
+
             if x < 0:
                 x = 0
             if x >= self.w:
@@ -57,18 +62,19 @@ class ImageWin(QtWidgets.QWidget):
 
             # Get the mouse cursor position
             p = y, x
-            seed = self.seed
-            
+            anchor = self.anchor
+
             # Export bitmap
             if event.buttons() == QtCore.Qt.MidButton:
-                filepath = QtWidgets.QFileDialog.getSaveFileName(self, 'Save image audio to', '', '*.bmp\n*.jpg\n*.png')
+                filepath = QtWidgets.QFileDialog.getSaveFileName(
+                    self, 'Save image audio to', '', '*.bmp\n*.jpg\n*.png')
                 image = self.image.copy()
-                
-                draw = QtWidgets.QPainter()
+
+                draw = QtGui.QPainter()
                 draw.begin(image)
                 draw.setPen(QtCore.Qt.blue)
                 if self.path_map:
-                    while p != seed:
+                    while p != anchor:
                         draw.drawPoint(p[1], p[0])
                         for q in self.lw._get_neighbors(p):
                             draw.drawPoint(q[1], q[0])
@@ -80,28 +86,35 @@ class ImageWin(QtWidgets.QWidget):
                         for q in self.lw._get_neighbors(p):
                             draw.drawPoint(q[1], q[0])
                 draw.end()
-                
-                image.save(filepath, quality=100)
-            
+
+                try:
+                    # Saving the image, checking for errors
+                    saved = image.save(filepath[0])
+                    if not saved:
+                        raise Exception("Image save failed.")
+                except Exception as e:
+                    print(f"Error saving image: {e}")
+
             else:
-                self.seed = p
-                
+                self.anchor = p
+
                 if self.path_map:
-                    while p != seed:
+                    while p != anchor:
                         p = self.path_map[p]
                         self.path.append(p)
-                
+
                 # Calculate path map
                 if event.buttons() == QtCore.Qt.LeftButton:
                     Thread(target=self._cal_path_matrix).start()
                     Thread(target=self._update_path_map_progress).start()
-                
+
                 # Finish current task and reset
                 elif event.buttons() == QtCore.Qt.RightButton:
                     self.path_map = {}
-                    self.status_bar.showMessage('Left click to set a seed')
+                    self.status_bar.showMessage(
+                        'Left click to set the anchor point')
                     self.active = False
-    
+
     def mouseMoveEvent(self, event):
         if self.active and event.buttons() == QtCore.Qt.NoButton:
             pos = event.pos()
@@ -113,10 +126,10 @@ class ImageWin(QtWidgets.QWidget):
                 # Draw livewire
                 p = y, x
                 path = []
-                while p != self.seed:
+                while p != self.anchor:
                     p = self.path_map[p]
                     path.append(p)
-                
+
                 image = self.image.copy()
                 draw = QtGui.QPainter()
                 draw.begin(image)
@@ -129,21 +142,25 @@ class ImageWin(QtWidgets.QWidget):
                         draw.drawPoint(p[1], p[0])
                 draw.end()
                 self.canvas.setPixmap(image)
-    
+
     def _cal_path_matrix(self):
-        self.seed_enabled = False
+        self.anchor_enabled = False
         self.active = False
-        self.status_bar.showMessage('Calculating path map...')
-        path_matrix = self.lw.get_path_matrix(self.seed)
-        self.status_bar.showMessage(r'Left: new seed / Right: finish')
-        self.seed_enabled = True
+        self.status_bar.showMessage(
+            'Calculating path map from anchor point to other locations...')
+        path_matrix = self.lw.get_path_matrix(self.anchor)
+        self.status_bar.showMessage(
+            r'Left click: new anchor / Right click: finish process/ Middle click: export image')
+        self.anchor_enabled = True
         self.active = True
-        
+
         self.path_map = path_matrix
-    
+
     def _update_path_map_progress(self):
-        while not self.seed_enabled:
+        while not self.anchor_enabled:
             time.sleep(0.1)
-            message = 'Calculating path map... {:.1f}%'.format(self.lw.n_processed/self.lw.n_pixs*100.0)
+            message = 'Calculating path map... {:.1f}%'.format(
+                self.lw.n_processed/self.lw.n_pixs*100.0)
             self.status_bar.showMessage(message)
-        self.status_bar.showMessage(r'Left: new seed / Right: finish')
+        self.status_bar.showMessage(
+            r'Left click: new anchor / Right click: finish process / Middle click: export image')

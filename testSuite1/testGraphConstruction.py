@@ -26,6 +26,7 @@ class TestImageProcessing(unittest.TestCase):
         rows, cols = self.test_image.shape
         neighbors = get_neighbors(1, 1, rows, cols)
         self.assertEqual(sorted(neighbors), [(0, 1), (1, 0), (1, 2), (2, 1)])
+        print("Test get_neighbors: passed")
 
     def test_sobel_filters(self):
         Gx, Gy, G = sobel_filters(self.test_image)
@@ -34,6 +35,7 @@ class TestImageProcessing(unittest.TestCase):
         np.testing.assert_array_almost_equal(Gx, self.expected_Gx)
         np.testing.assert_array_almost_equal(Gy, self.expected_Gy)
         np.testing.assert_array_almost_equal(G, self.expected_G)
+        print("Test sobel_filters: passed")
 
     def test_construct_graph_with_gradients(self):
         G = np.sqrt(self.expected_Gx**2 + self.expected_Gy**2)
@@ -43,6 +45,7 @@ class TestImageProcessing(unittest.TestCase):
         self.assertIn((1, 0), graph[(1, 1)])
         self.assertIn((1, 2), graph[(1, 1)])
         self.assertIn((2, 1), graph[(1, 1)])
+        print("Test construct_graph_with_gradients: passed")
 
 
 if __name__ == '__main__':

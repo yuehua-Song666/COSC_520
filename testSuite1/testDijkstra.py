@@ -26,11 +26,13 @@ class TestDijkstraAlgorithms(unittest.TestCase):
         self.assertEqual(distances, {'A': 0, 'B': 1, 'C': 3, 'D': 4})
         self.assertEqual(
             predecessors, {'A': None, 'B': 'A', 'C': 'B', 'D': 'C'})
+        print("test_dijkstra_with_predecessors: passed")
 
     def test_backtrack_path(self):
         _, predecessors = dijkstra_with_predecessors(self.graph, self.start)
         path = backtrack_path(predecessors, self.start, self.end)
         self.assertEqual(path, ['A', 'B', 'C', 'D'])
+        print("test_backtrack_path: passed")
 
     def test_draw_path_on_image(self):
         # Create a simple test image (2x2 pixels)
@@ -44,6 +46,7 @@ class TestDijkstraAlgorithms(unittest.TestCase):
         expected_image[1, 1] = color_value
 
         np.testing.assert_array_equal(modified_image, expected_image)
+        print("test_draw_path_on_image: passed")
 
 
 if __name__ == '__main__':
